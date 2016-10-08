@@ -13,7 +13,7 @@ public class ObservableTest
     public void onSubscribeDeferredUntilSubscription() throws Exception {
         CompletableFuture<?> f = new CompletableFuture<>();
 
-        Observable observable = new Observable(subscriber -> f.complete(null));
+        Observable observable = new Observable(observer -> f.complete(null));
         assertFalse(f.isDone());
 
         observable.subscribe();
