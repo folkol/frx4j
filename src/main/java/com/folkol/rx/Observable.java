@@ -73,10 +73,12 @@ public class Observable<T>
     }
 
 
-    //-----------------------------------------------------------------------------------------
-    // The methods below are not defining properties of the Observable, but rather convenience
-    // methods to make working with Observables more concise.
-    //-----------------------------------------------------------------------------------------
+    //------------------------------------------------------------------------------//
+    //                                                                              //
+    // The methods below are not defining properties of the Observable, but rather  //
+    // convenience methods that makes working with Observables a bit more pleasant. //
+    //                                                                              //
+    //------------------------------------------------------------------------------//
 
     public static <T> Observable<T> from(Iterable<T> ts)
     {
@@ -184,36 +186,6 @@ public class Observable<T>
      */
     public static <T> Observable<T> merge(Observable<Observable<T>> source)
     {
-        AtomicInteger numObservables = new AtomicInteger();
-        AtomicBoolean sourceCompleted = new AtomicBoolean();
-        final Object drainMutex = new Object[0];
-        final ConcurrentLinkedQueue<T> items = new ConcurrentLinkedQueue<>();
-        Scheduler drainingScheduler = Schedulers.newThread();
-        return new Observable<>(observer -> {
-            Runnable drain = () -> {
-                synchronized (drainMutex) {
-                    System.out.println("Inside synchronized block");
-                    Iterator<T> iterator = items.iterator();
-                    while (iterator.hasNext()) {
-                        observer.onNext(iterator.next());
-                        iterator.remove();
-                    }
-                    if (sourceCompleted.get() && numObservables.get() == 0) {
-                        drainingScheduler.schedule(observer::onCompleted);
-                    }
-                }
-            };
-            source.subscribe(observable -> {
-                numObservables.incrementAndGet();
-                observable.subscribe(item -> {
-                    System.out.println("Adding " + item);
-                    items.add(item);
-                    drainingScheduler.schedule(drain);
-                }, numObservables::decrementAndGet);
-            }, () -> {
-                sourceCompleted.set(true);
-                drainingScheduler.schedule(drain);
-            });
-        });
+        return source.chain(new MergingOperator<>());
     }
 }
