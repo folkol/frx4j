@@ -3,13 +3,10 @@ package com.folkol.rx;
 import com.folkol.rx.util.Schedulers;
 import org.junit.Test;
 
-import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
 
 import static java.util.function.Function.identity;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
