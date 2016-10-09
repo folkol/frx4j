@@ -3,13 +3,15 @@ package com.folkol.rx;
 import java.util.function.Consumer;
 
 /**
- * <p>An {@code Observable} represents a series of <em>callbacks</em>.</p>
+ * <p>An {@code Observable} represents a stream of, possibly not yet obtained, <em>items</em>.</p>
  *
- * <p>An {@link Observer} <em>subscribes</em> to an {@code Observable} by calling its
- * {@link Observable#subscribe} method. Throughout this subscription, the
- * Observable will call {@link Observer#onNext onNext} zero or more times,
- * and then optionally call <em>either</em> {@link Observer#onCompleted onCompleted}
- * <em>or</em> {@link Observer#onError onError} zero or one time.</p>
+ * <p>An {@link Observer} can <em>subscribe</em> to an {@code Observable} by calling its
+ * {@link Observable#subscribe} method. Throughout this subscription, the {@code Observable} will call
+ * {@link Observer#onNext} for every item it wants to <em>emit</em> — if any at all.</p>
+ *
+ * <p>If the Observable will produce no more items, it <em>may</em> call <strong>either</strong>
+ * {@link Observer#onCompleted} <strong>or</strong> {@link Observer#onError} <strong>at most</strong>
+ * one (1) time.</p>
  */
 public class Observable
 {
