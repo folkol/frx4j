@@ -3,6 +3,7 @@ package com.folkol.rx;
 import com.folkol.rx.operators.FilteringOperator;
 import com.folkol.rx.operators.MappingOperator;
 import com.folkol.rx.operators.MergingOperator;
+import com.folkol.rx.operators.ObserveOnOperator;
 import com.folkol.rx.operators.SubscribeOnOperator;
 import com.folkol.rx.util.Schedulers;
 
@@ -185,5 +186,15 @@ public class Observable<T>
     public static <T> Observable<T> merge(Observable<Observable<T>> source, Scheduler scheduler)
     {
         return source.chain(new MergingOperator<>(scheduler));
+    }
+
+    /**
+     * Creates a new Observable that will subscribe to its upstream Observable, and then emit those
+     * items on the given scheduler.
+     */
+    public Observable<T> observeOn(Scheduler scheduler)
+    {
+        Observable<Observable<T>> nested = Observable.just(this);
+        return nested.chain(new ObserveOnOperator<>(scheduler));
     }
 }
