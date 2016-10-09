@@ -1,8 +1,8 @@
 # frx4j — Folkol's Reactive Extensions for Java
 
-_**frx4j**_ is intended  — for several reasons — to be a bare-bones implementation of [ReactiveX](http://reactivex.io). Partially because I am a lazy bum, but also in order to keep things simple enough for the core concepts of RX to be visible by reading the code or stepping with a debugger.
+**frx4j** is intended — for several reasons — to be a bare-bones implementation of _a subset_ of [ReactiveX](http://reactivex.io). Partially because I am a lazy bum, but also because I want to demonstrate the core contepts of RX for those who prefer to read code over staring at marble diagrams.
 
-> **N.b.** Like most other projects on my GitHub, this hack is only intended for education and recreation. _If you want to use RX in a real Java app, use instead [Netflix's implementation](https://github.com/ReactiveX/RxJava) instead._
+> **N.b.** Like most other projects that I upload to GitHub, this hack is only intended for education and recreation. _If you want to use RX in a real Java app, use [Netflix's implementation](https://github.com/ReactiveX/RxJava) instead._
 
 # Build
 
@@ -10,23 +10,28 @@ _**frx4j**_ is intended  — for several reasons — to be a bare-bones implemen
 
 # Core concepts
 
-- **Observable stream:** An _Observable Stream_ is a push-based stream of items.
+- **Observable Stream:** An _Observable Stream_ is a _push-based_ stream of items.
 - **Observable:** An _Observable_ is the _producer_ of a stream of _Items_. (An instance of the class _Observable_.)
 - **Observer:** An _Observer_ is the _consumer_ of a stream of _Items_. (An instance of the interface _Observer_.)
 - **Emission:** An _Observable_ _Emits_ _Items_ to its _subscribed Observer_ by calling the _Observer's onNext-method_.
 - **Subscribe:** A particular _Observer_ instance can _subscribe_ to a particular _Observable_ instance by calling its _subscribe-method_.
-- **Subscription:** When a particular _Observer_ instance is connected to a particular _Observable_ instance in order to recieve _notifications_, the connection is called _a Subscription_.
+- **Subscription:** A connection between a particular _Observer_ and a particular _Observable_ that begins with a call to _subscribe_.
 
 To be implemented:
 
-- **Lifting:** _Lifting_ is creating a _new Observable_ and chaining it together with the _old Observable_. When _subscribing_ to this _new Observable_, it will in turn _subscribe_ to the _old one_ and re-emit its items — transformed by a given _Operator_.
-- **Operator:** A function that transforms _Items_.
-- **Compose:**
+- **Chain:** Chain creates a _new Observable_ that is chained to the _old Observable_. (**N.b.** This is called "lift" in Netflix's RxJava*.)
+- **Operator:** A function that creates the _Observer_ used by _Chain_.
+- **Compose:** A function that transforms the _Observable_ into a new _Observable_.
 - **Scheduler:** A _Scheduler_ decides which _Worker/Executor_ that will call a _Observer's onSubscribe_.
-- **Worker/Executor:** A _Worker_ is calling an _Observable's_ _onSubscribe_ when a _Observer_ is starting a _subscription_.
+- **Executor:** A _Worker_ is making the actual call an _Observable's_ _onSubscribe_ when a _Observer_ is starting a _subscription_.
+
+> *) Even if ::lift actually do lift some function into the Observable, I think that ::chain is a better name.
 
 # The Observable Contract
 
+...
+
+WIP: onXXX-calls for a particular subscription must not be concurrent, and must have a happens-before relationship even if called from separate threads.
 ...
 
 # Corners cut
