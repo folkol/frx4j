@@ -7,3 +7,9 @@ This is intended to be a bare-bone implementation of [ReactiveX](http://reactive
 ## Build
 
     $ gradle
+
+### References
+
+- [http://www.introtorx.com/]()
+- [http://reactivex.io/]()
+- [https://github.com/ReactiveX/RxJava/]()
