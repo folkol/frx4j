@@ -1,20 +1,21 @@
 package com.folkol.rx;
 
 /**
- * An {@code Observer} provides callbacks for {@code Observables} to use when they want to
- * send notifications.
+ * An {@code Observer} provides callbacks for {@link Observable Observables}
+ * to use when they want to send notifications.
  */
 public interface Observer<T>
 {
     /**
-     * <p>{@code onNext} will be called when an Observable 'emits' an {@code item}.</p>
+     * <p>{@code onNext} will be called when an {@link Observable} <em>emits</em>
+     * an <em>item</em>.</p>
      *
-     * <p>{@code onNext} might be called from different threads, but it will
-     * never be called concurrently. It is the Observable's responsibility
-     * to establish a happens-before-relationship in between calls to this
-     * method for a given subscription.</p>
+     * <p><b>N.b.</b> {@code onNext} might be called from different threads, but it will
+     * never be called concurrently. It is the {@link Observable Observable's} responsibility
+     * to establish a <em>happens-before-relationship</em> in between calls to this
+     * method for a given <em>subscription</em>.</p>
      *
-     * @param item The item emitted by the Observable.
+     * @param item The <em>item emitted</em> by the {@link Observable}.
      */
     void onNext(T item);
 
