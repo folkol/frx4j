@@ -174,7 +174,7 @@ public class Observable<T>
      * Creates a new Observable that will merge the emits from all Observables emitted by upstream.
      * </p>
      * <p>
-     *     This operator will
+     * This operator will
      * </p>
      */
     public static <T> Observable<T> merge(Observable<Observable<T>> source)

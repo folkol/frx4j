@@ -28,7 +28,7 @@ public class MergingOperatorTest
 
         List<Integer> xs = collectItems(merge);
         assertEquals(NUM_ITEMS, xs.size());
-        for(int i = 0; i < NUM_ITEMS; i++) {
+        for (int i = 0; i < NUM_ITEMS; i++) {
             xs.contains(i);
         }
     }
@@ -46,7 +46,7 @@ public class MergingOperatorTest
     private Observable<Observable<Integer>> bunchOfObserables()
     {
         List<Observable<Integer>> observables = new ArrayList<>();
-        for(int i = 0; i < NUM_ITEMS; i++) {
+        for (int i = 0; i < NUM_ITEMS; i++) {
             observables.add(blockingAndSlow(i));
         }
         return Observable.from(observables);
