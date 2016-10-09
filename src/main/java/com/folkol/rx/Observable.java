@@ -1,6 +1,7 @@
 package com.folkol.rx;
 
 import com.folkol.rx.operators.FilteringOperator;
+import com.folkol.rx.operators.MappingOperator;
 
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -108,5 +109,10 @@ public class Observable<T>
     public Observable<T> filter(Predicate<T> predicate)
     {
         return chain(new FilteringOperator<>(predicate));
+    }
+
+    public <R> Observable<R> map(Function<T, R> f)
+    {
+        return chain(new MappingOperator<>(f));
     }
 }
