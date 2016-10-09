@@ -13,14 +13,14 @@ import java.util.function.Consumer;
  * {@link Observer#onCompleted} <strong>or</strong> {@link Observer#onError} <strong>at most</strong>
  * one (1) time.</p>
  */
-public class Observable
+public class Observable<T>
 {
-    private Consumer<Observer> onSubscribe;
+    private Consumer<Observer<T>> onSubscribe;
 
     /**
      * @param onSubscribe A callback function that will be called when someone subscribes to this Observable.
      */
-    public Observable(Consumer<Observer> onSubscribe)
+    public Observable(Consumer<Observer<T>> onSubscribe)
     {
         this.onSubscribe = onSubscribe;
     }
@@ -28,5 +28,17 @@ public class Observable
     public void subscribe()
     {
         onSubscribe.accept(null);
+    }
+
+    /**
+     * Creates a <em>new Observable</em> that will, when subscribed to, in turn subscribe to
+     * this Observable — using the Observer supplied by the given operator.
+     *
+     * @param operator The Operator that will supply the delegating Observer.
+     * @return A new Observable that is chained to this one.
+     */
+    public <R> Observable chain(Operator<T, R> operator)
+    {
+        return new Observable<R>(observer -> onSubscribe.accept(operator.apply(observer)));
     }
 }
