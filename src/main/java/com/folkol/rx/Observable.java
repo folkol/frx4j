@@ -1,6 +1,7 @@
 package com.folkol.rx;
 
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 /**
  * <p>An {@code Observable} represents a stream of, possibly not yet obtained, <em>items</em>.</p>
@@ -25,9 +26,9 @@ public class Observable<T>
         this.onSubscribe = onSubscribe;
     }
 
-    public void subscribe()
+    public void subscribe(Observer<T> observer)
     {
-        onSubscribe.accept(null);
+        onSubscribe.accept(observer);
     }
 
     /**
@@ -37,8 +38,56 @@ public class Observable<T>
      * @param operator The Operator that will supply the delegating Observer.
      * @return A new Observable that is chained to this one.
      */
-    public <R> Observable chain(Operator<T, R> operator)
+    public <R> Observable<R> chain(Function<Observer<R>, Observer<T>> operator)
     {
-        return new Observable<R>(observer -> onSubscribe.accept(operator.apply(observer)));
+        return new Observable<>(observer -> onSubscribe.accept(operator.apply(observer)));
+    }
+
+
+    //-----------------------------------------------------------------------------------------
+    // The methods below are not defining properties of the Observable, but rather convenience
+    // methods to make working with Observables easier.
+    //-----------------------------------------------------------------------------------------
+
+    /**
+     * Subscribes to this Observable with a NO-OP-Observer.
+     */
+    public void subscribe()
+    {
+        subscribe(item -> {}, () -> {}, throwable -> {});
+    }
+
+    public void subscribe(Consumer<T> onNext)
+    {
+        subscribe(onNext, () -> {}, x -> {});
+    }
+
+    public void subscribe(Consumer<T> onNext, Runnable onCompleted)
+    {
+        subscribe(onNext, onCompleted, x -> {});
+    }
+
+        public void subscribe(Consumer<T> onNext, Runnable onCompleted, Consumer<Throwable> onError)
+    {
+        subscribe(new Observer<T>()
+        {
+            @Override
+            public void onNext(T item)
+            {
+                onNext.accept(item);
+            }
+
+            @Override
+            public void onCompleted()
+            {
+                onCompleted.run();
+            }
+
+            @Override
+            public void onError(Throwable t)
+            {
+                onError.accept(t);
+            }
+        });
     }
 }

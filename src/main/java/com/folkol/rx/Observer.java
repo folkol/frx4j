@@ -23,16 +23,16 @@ public interface Observer<T>
      * <p>{@code onCompleted} may be called by the Observable to notify its
      * Observers that there are no more items to emit.</p>
      *
-     * <p>If {@code onCompleted} is called, the Observer will not call {@code onError}
-     * for this subscription.</p>
+     * <p>If {@code onCompleted} is called, the Observer will make no more calls to
+     * notifications for this subscription.</p>
      */
     void onCompleted();
 
     /**
-     * <p>{@code onError} may be called by the Observable to notify its
-     * Observers that there has been an accident, and no more items can be emitted.</p>
+     * <p>{@code onError} may be called by the Observable to notify its Observer
+     * that there has been an accident, and that no more items can be emitted.</p>
      *
-     * <p>If {@code onError} is called, the Observer will not call {@code onCompleted}
+     * <p>If {@code onError} is called, the Observer will make no more notifications
      * for this subscription.</p>
      */
     void onError(Throwable t);

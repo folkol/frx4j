@@ -3,7 +3,9 @@ package com.folkol.rx;
 import org.junit.Test;
 
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
 
+import static java.util.function.Function.identity;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -12,8 +14,9 @@ public class ObservableTest
     @Test
     public void onSubscribeDeferred() throws Exception {
         CompletableFuture<?> future = new CompletableFuture<>();
+        Consumer<Observer<Object>> onSubscribe = observer -> future.complete(null);
 
-        Observable<?> observable = new Observable<>(observer -> future.complete(null));
+        Observable<?> observable = new Observable<>(onSubscribe);
         assertFalse(future.isDone());
 
         observable.subscribe();
@@ -22,9 +25,10 @@ public class ObservableTest
 
     @Test
     public void chainCreatesNewObservable() throws Exception {
-        Observable<Object> original = new Observable<>(x -> {});
+        Consumer<Observer<Object>> onSubscribe = x -> {};
+        Observable<Object> original = new Observable<>(onSubscribe);
 
-        Observable<?> chained = original.chain(x -> x);
+        Observable<Object> chained = original.chain(identity());
 
         assertFalse(original == chained);
     }
