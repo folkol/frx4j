@@ -6,18 +6,8 @@ import com.folkol.rx.operators.MergingOperator;
 import com.folkol.rx.operators.SubscribeOnOperator;
 import com.folkol.rx.util.Schedulers;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.concurrent.ConcurrentLinkedDeque;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -183,9 +173,17 @@ public class Observable<T>
      * <p>
      * Creates a new Observable that will merge the emits from all Observables emitted by upstream.
      * </p>
+     * <p>
+     *     This operator will
+     * </p>
      */
     public static <T> Observable<T> merge(Observable<Observable<T>> source)
     {
-        return source.chain(new MergingOperator<>());
+        return merge(source, Schedulers.immediate());
+    }
+
+    public static <T> Observable<T> merge(Observable<Observable<T>> source, Scheduler scheduler)
+    {
+        return source.chain(new MergingOperator<>(scheduler));
     }
 }
