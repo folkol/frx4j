@@ -2,6 +2,7 @@ package com.folkol.rx;
 
 import com.folkol.rx.operators.FilteringOperator;
 import com.folkol.rx.operators.MappingOperator;
+import com.folkol.rx.operators.OnSubscribeOperator;
 
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -9,17 +10,17 @@ import java.util.function.Predicate;
 
 /**
  * <p>
- *     An {@code Observable} represents a stream of, possibly not yet obtained, <em>items</em>.
+ * An {@code Observable} represents a stream of, possibly not yet obtained, <em>items</em>.
  * </p>
  * <p>
- *     An {@link Observer} can <em>subscribe</em> to an {@code Observable} by calling its
- *     {@link Observable#subscribe} method. Throughout this subscription, the {@code Observable}
- *     will call {@link Observer#onNext} for every item it wants to <em>emit</em> — if any at all.
+ * An {@link Observer} can <em>subscribe</em> to an {@code Observable} by calling its
+ * {@link Observable#subscribe} method. Throughout this subscription, the {@code Observable}
+ * will call {@link Observer#onNext} for every item it wants to <em>emit</em> — if any at all.
  * </p>
  * <p>
- *     If the Observable will produce no more items, it <em>may</em> call <strong>either</strong>
- *     {@link Observer#onCompleted} <strong>or</strong> {@link Observer#onError} <strong>at most</strong>
- *     one (1) time.
+ * If the Observable will produce no more items, it <em>may</em> call <strong>either</strong>
+ * {@link Observer#onCompleted} <strong>or</strong> {@link Observer#onError} <strong>at most</strong>
+ * one (1) time.
  * </p>
  */
 public class Observable<T>
@@ -58,14 +59,29 @@ public class Observable<T>
     }
 
 
-
     //-----------------------------------------------------------------------------------------
     // The methods below are not defining properties of the Observable, but rather convenience
     // methods to make working with Observables easier.
     //-----------------------------------------------------------------------------------------
 
     /**
-     * Subscribes to this Observable with a NO-OP-Observer.
+     * Creates an Observable that will, on subscribe, emit the given item.
+     */
+    public static <T> Observable<T> just(T t)
+    {
+        return new Observable<>(observer -> observer.onNext(t));
+    }
+
+    /**
+     * Creates an Observable that will emit no items and then call onComplete.
+     */
+    public static <T> Observable<T> empty()
+    {
+        return new Observable<>(Observer::onCompleted);
+    }
+
+    /**
+     * Some convenience methods that creates Observers from callbacks
      */
     public void subscribe()
     {
@@ -114,5 +130,12 @@ public class Observable<T>
     public <R> Observable<R> map(Function<T, R> f)
     {
         return chain(new MappingOperator<>(f));
+    }
+
+    public Observable<T> subscribeOn(Scheduler scheduler)
+    {
+        Observable<Observable<T>> nested = new Observable<>(observable -> observable.onNext(this));
+
+        return nested.chain(new OnSubscribeOperator<>(scheduler));
     }
 }

@@ -1,23 +1,28 @@
 package com.folkol.rx;
 
+import com.folkol.rx.util.Schedulers;
 import org.junit.Test;
 
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 import static java.util.function.Function.identity;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 public class ObservableTest
 {
     @Test
-    public void onSubscribeDeferred() throws Exception {
+    public void onSubscribeDeferred() throws Exception
+    {
         CompletableFuture<?> future = new CompletableFuture<>();
-        Consumer<Observer<Object>> onSubscribe = observer -> future.complete(null);
 
-        Observable<?> observable = new Observable<>(onSubscribe);
+        Observable<?> observable = new Observable<>(observer -> future.complete(null));
         assertFalse("onSubscribe shouldn't have been called yet.", future.isDone());
 
         observable.subscribe();
@@ -25,24 +30,23 @@ public class ObservableTest
     }
 
     @Test
-    public void chainCreatesNewObservable() throws Exception {
-        Consumer<Observer<Object>> onSubscribe = x -> {};
-        Observable<Object> original = new Observable<>(onSubscribe);
+    public void chainCreatesNewObservable() throws Exception
+    {
+        Observable<?> original = Observable.empty();
 
-        Observable<Object> chained = original.chain(identity());
+        Observable<?> chained = original.chain(identity());
 
         assertFalse("::chain should return a new Observable", original == chained);
     }
 
     @Test
-    public void chainDeferredSubscription() throws Exception {
+    public void chainDefersSubscription() throws Exception
+    {
         CompletableFuture<?> future = new CompletableFuture<>();
-        Consumer<Observer<Object>> onSubscribe = observer -> future.complete(null);
 
-        Observable<Object> original = new Observable<>(onSubscribe);
-        assertFalse("onSubscribe shouldn't have been called yet.", future.isDone());
-
-        Observable<?> chained = original.chain(identity());
+        Observable<?> chained =
+            new Observable<>(observer -> future.complete(null))
+                .chain(identity());
         assertFalse("onSubscribe shouldn't have been called yet.", future.isDone());
 
         chained.subscribe();
@@ -50,14 +54,28 @@ public class ObservableTest
     }
 
     @Test
-    public void throwFromCallbackCausesOnError() throws Exception {
+    public void throwFromCallbackCausesOnError() throws Exception
+    {
         CompletableFuture<Throwable> future = new CompletableFuture<>();
-        Consumer<Observer<Object>> onSubscribe = observer -> observer.onNext(null);
-
-        Observable<Object> observable = new Observable<>(onSubscribe);
-        assertFalse("onSubscribe shouldn't have been called yet.", future.isDone());
+        Observable<Object> observable = Observable.just(null);
 
         observable.subscribe(item -> fail(), () -> {}, future::complete);
+
         assertTrue("onSubscribe should have been called by now", future.isDone());
+    }
+
+    @Test
+    public void testScheduleOn()
+        throws Exception
+    {
+        CompletableFuture<Thread> future = new CompletableFuture<>();
+
+        Observable.just(null)
+            .subscribeOn(Schedulers.newThread())
+            .subscribe(item -> future.complete(Thread.currentThread()));
+
+        Thread thread = future.get(10, TimeUnit.SECONDS);
+        assertNotEquals("Expected the onNext callback from another Thread", Thread.currentThread(), thread);
+        assertTrue(future.get().getName().startsWith("schedulers-new-thread-"));
     }
 }
