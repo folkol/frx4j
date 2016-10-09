@@ -1,7 +1,10 @@
 package com.folkol.rx;
 
+import com.folkol.rx.operators.FilteringOperator;
+
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 /**
  * <p>
@@ -100,5 +103,10 @@ public class Observable<T>
                 onError.accept(t);
             }
         });
+    }
+
+    public Observable<T> filter(Predicate<T> predicate)
+    {
+        return chain(new FilteringOperator<>(predicate));
     }
 }
