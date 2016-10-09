@@ -25,7 +25,7 @@
 
 - **Scheduler:** Even though asynchronicity and _Schedulers_ are ubiquitous in RxJava, I wouldn't call them core concepts. It is just one example of an _Operator_ that, instead of calling _onSubscribe_ directly, delegates that call to some ExecutorService or similar.
 - **Upstream:** Closer to the originating Observable.
-- **Downstream:** Closer to the original subscribe
+- **Downstream:** Closer to the original subscriber.
 
 # The Observable Contract
 
