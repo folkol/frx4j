@@ -24,12 +24,13 @@ public class Schedulers
 
     public static Scheduler newThread()
     {
-        return doOnSubscribe -> {
-            Thread thread = new Thread(doOnSubscribe);
-            thread.setName("schedulers-new-thread-" + count.getAndIncrement());
+        ExecutorService es = Executors.newSingleThreadExecutor(r -> {
+            Thread thread = new Thread(r);
             thread.setDaemon(true);
-            thread.start();
-        };
+            thread.setName("schedulers-new-thread-" + count.incrementAndGet());
+            return thread;
+        });
+        return es::submit;
     }
 
     public static Scheduler io()

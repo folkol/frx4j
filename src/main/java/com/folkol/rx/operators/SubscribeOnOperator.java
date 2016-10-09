@@ -6,11 +6,11 @@ import com.folkol.rx.Scheduler;
 
 import java.util.function.Function;
 
-public class OnSubscribeOperator<T> implements Function<Observer<T>, Observer<Observable<T>>>
+public class SubscribeOnOperator<T> implements Function<Observer<T>, Observer<Observable<T>>>
 {
     private Scheduler scheduler;
 
-    public OnSubscribeOperator(Scheduler scheduler)
+    public SubscribeOnOperator(Scheduler scheduler)
     {
         this.scheduler = scheduler;
     }
@@ -23,7 +23,7 @@ public class OnSubscribeOperator<T> implements Function<Observer<T>, Observer<Ob
             @Override
             public void onCompleted()
             {
-                // ignore because this is a nested Observable and we expect only 1 Observable<T> emitted to onNext
+
             }
 
             @Override

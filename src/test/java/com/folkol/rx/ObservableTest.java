@@ -1,14 +1,11 @@
 package com.folkol.rx;
 
-import com.folkol.rx.util.Schedulers;
 import org.junit.Test;
 
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
 
 import static java.util.function.Function.identity;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -17,7 +14,7 @@ public class ObservableTest
     @Test
     public void onSubscribeDeferred() throws Exception
     {
-        CompletableFuture<?> future = new CompletableFuture<>();
+        CompletableFuture<Void> future = new CompletableFuture<>();
 
         Observable<?> observable = new Observable<>(observer -> future.complete(null));
         assertFalse("onSubscribe shouldn't have been called yet.", future.isDone());
@@ -39,7 +36,7 @@ public class ObservableTest
     @Test
     public void chainDefersSubscription() throws Exception
     {
-        CompletableFuture<?> future = new CompletableFuture<>();
+        CompletableFuture<Void> future = new CompletableFuture<>();
 
         Observable<?> chained =
             new Observable<>(observer -> future.complete(null))
@@ -59,20 +56,5 @@ public class ObservableTest
         observable.subscribe(item -> fail(), () -> {}, future::complete);
 
         assertTrue("onSubscribe should have been called by now", future.isDone());
-    }
-
-    @Test
-    public void testScheduleOn()
-        throws Exception
-    {
-        CompletableFuture<Thread> future = new CompletableFuture<>();
-
-        Observable.just(null)
-            .subscribeOn(Schedulers.newThread())
-            .subscribe(item -> future.complete(Thread.currentThread()));
-
-        Thread thread = future.get(10, TimeUnit.SECONDS);
-        assertNotEquals("Expected the onNext callback from another Thread", Thread.currentThread(), thread);
-        assertTrue(future.get().getName().startsWith("schedulers-new-thread-"));
     }
 }

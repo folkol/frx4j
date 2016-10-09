@@ -2,8 +2,22 @@ package com.folkol.rx;
 
 import com.folkol.rx.operators.FilteringOperator;
 import com.folkol.rx.operators.MappingOperator;
-import com.folkol.rx.operators.OnSubscribeOperator;
+import com.folkol.rx.operators.MergingOperator;
+import com.folkol.rx.operators.SubscribeOnOperator;
+import com.folkol.rx.util.Schedulers;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -61,15 +75,30 @@ public class Observable<T>
 
     //-----------------------------------------------------------------------------------------
     // The methods below are not defining properties of the Observable, but rather convenience
-    // methods to make working with Observables easier.
+    // methods to make working with Observables more concise.
     //-----------------------------------------------------------------------------------------
 
-    /**
-     * Creates an Observable that will, on subscribe, emit the given item.
-     */
+    public static <T> Observable<T> from(Iterable<T> ts)
+    {
+        return new Observable<>(observer -> {
+            ts.forEach(observer::onNext);
+            observer.onCompleted();
+        });
+    }
+
     public static <T> Observable<T> just(T t)
     {
-        return new Observable<>(observer -> observer.onNext(t));
+        return Observable.from(Collections.singleton(t));
+    }
+
+    public static <T> Observable<T> just(T t1, T t2)
+    {
+        return Observable.from(Arrays.asList(t1, t2));
+    }
+
+    public static <T> Observable<T> just(T t1, T t2, T t3)
+    {
+        return Observable.from(Arrays.asList(t1, t2, t3));
     }
 
     /**
@@ -122,20 +151,69 @@ public class Observable<T>
         });
     }
 
+    /**
+     * Creates a new Observable that will only pass-through items matching the predicate.
+     */
     public Observable<T> filter(Predicate<T> predicate)
     {
         return chain(new FilteringOperator<>(predicate));
     }
 
+    /**
+     * Creates a new Observable that will pass-through items after applying the given map function to them.
+     */
     public <R> Observable<R> map(Function<T, R> f)
     {
         return chain(new MappingOperator<>(f));
     }
 
+    /**
+     * Creates a new Observable that will subscribe to its upstream Observable on the given scheduler, and then
+     * pass-through all items.
+     */
     public Observable<T> subscribeOn(Scheduler scheduler)
     {
-        Observable<Observable<T>> nested = new Observable<>(observable -> observable.onNext(this));
+        Observable<Observable<T>> nested = Observable.just(this);
+        return nested.chain(new SubscribeOnOperator<>(scheduler));
+    }
 
-        return nested.chain(new OnSubscribeOperator<>(scheduler));
+    /**
+     * <p>
+     * Creates a new Observable that will merge the emits from all Observables emitted by upstream.
+     * </p>
+     */
+    public static <T> Observable<T> merge(Observable<Observable<T>> source)
+    {
+        AtomicInteger numObservables = new AtomicInteger();
+        AtomicBoolean sourceCompleted = new AtomicBoolean();
+        final Object drainMutex = new Object[0];
+        final ConcurrentLinkedQueue<T> items = new ConcurrentLinkedQueue<>();
+        Scheduler drainingScheduler = Schedulers.newThread();
+        return new Observable<>(observer -> {
+            Runnable drain = () -> {
+                synchronized (drainMutex) {
+                    System.out.println("Inside synchronized block");
+                    Iterator<T> iterator = items.iterator();
+                    while (iterator.hasNext()) {
+                        observer.onNext(iterator.next());
+                        iterator.remove();
+                    }
+                    if (sourceCompleted.get() && numObservables.get() == 0) {
+                        drainingScheduler.schedule(observer::onCompleted);
+                    }
+                }
+            };
+            source.subscribe(observable -> {
+                numObservables.incrementAndGet();
+                observable.subscribe(item -> {
+                    System.out.println("Adding " + item);
+                    items.add(item);
+                    drainingScheduler.schedule(drain);
+                }, numObservables::decrementAndGet);
+            }, () -> {
+                sourceCompleted.set(true);
+                drainingScheduler.schedule(drain);
+            });
+        });
     }
 }
