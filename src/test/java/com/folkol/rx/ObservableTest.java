@@ -8,6 +8,7 @@ import java.util.function.Consumer;
 import static java.util.function.Function.identity;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 public class ObservableTest
 {
@@ -17,10 +18,10 @@ public class ObservableTest
         Consumer<Observer<Object>> onSubscribe = observer -> future.complete(null);
 
         Observable<?> observable = new Observable<>(onSubscribe);
-        assertFalse(future.isDone());
+        assertFalse("onSubscribe shouldn't have been called yet.", future.isDone());
 
         observable.subscribe();
-        assertTrue(future.isDone());
+        assertTrue("onSubscribe should have been called by now", future.isDone());
     }
 
     @Test
@@ -30,20 +31,33 @@ public class ObservableTest
 
         Observable<Object> chained = original.chain(identity());
 
-        assertFalse(original == chained);
+        assertFalse("::chain should return a new Observable", original == chained);
     }
 
     @Test
     public void chainDeferredSubscription() throws Exception {
         CompletableFuture<?> future = new CompletableFuture<>();
+        Consumer<Observer<Object>> onSubscribe = observer -> future.complete(null);
 
-        Observable<Object> original = new Observable<>(observer -> future.complete(null));
-        assertFalse(future.isDone());
+        Observable<Object> original = new Observable<>(onSubscribe);
+        assertFalse("onSubscribe shouldn't have been called yet.", future.isDone());
 
-        Observable<?> chained = original.chain(x -> x);
-        assertFalse(future.isDone());
+        Observable<?> chained = original.chain(identity());
+        assertFalse("onSubscribe shouldn't have been called yet.", future.isDone());
 
         chained.subscribe();
-        assertTrue(future.isDone());
+        assertTrue("onSubscribe should have been called by now", future.isDone());
+    }
+
+    @Test
+    public void throwFromCallbackCausesOnError() throws Exception {
+        CompletableFuture<Throwable> future = new CompletableFuture<>();
+        Consumer<Observer<Object>> onSubscribe = observer -> observer.onNext(null);
+
+        Observable<Object> observable = new Observable<>(onSubscribe);
+        assertFalse("onSubscribe shouldn't have been called yet.", future.isDone());
+
+        observable.subscribe(item -> fail(), () -> {}, future::complete);
+        assertTrue("onSubscribe should have been called by now", future.isDone());
     }
 }

@@ -4,15 +4,19 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 /**
- * <p>An {@code Observable} represents a stream of, possibly not yet obtained, <em>items</em>.</p>
- *
- * <p>An {@link Observer} can <em>subscribe</em> to an {@code Observable} by calling its
- * {@link Observable#subscribe} method. Throughout this subscription, the {@code Observable} will call
- * {@link Observer#onNext} for every item it wants to <em>emit</em> — if any at all.</p>
- *
- * <p>If the Observable will produce no more items, it <em>may</em> call <strong>either</strong>
- * {@link Observer#onCompleted} <strong>or</strong> {@link Observer#onError} <strong>at most</strong>
- * one (1) time.</p>
+ * <p>
+ *     An {@code Observable} represents a stream of, possibly not yet obtained, <em>items</em>.
+ * </p>
+ * <p>
+ *     An {@link Observer} can <em>subscribe</em> to an {@code Observable} by calling its
+ *     {@link Observable#subscribe} method. Throughout this subscription, the {@code Observable}
+ *     will call {@link Observer#onNext} for every item it wants to <em>emit</em> — if any at all.
+ * </p>
+ * <p>
+ *     If the Observable will produce no more items, it <em>may</em> call <strong>either</strong>
+ *     {@link Observer#onCompleted} <strong>or</strong> {@link Observer#onError} <strong>at most</strong>
+ *     one (1) time.
+ * </p>
  */
 public class Observable<T>
 {
@@ -28,12 +32,18 @@ public class Observable<T>
 
     public void subscribe(Observer<T> observer)
     {
-        onSubscribe.accept(observer);
+        try {
+            onSubscribe.accept(observer);
+        } catch (Throwable t) {
+            // This is just to demonstrate how exceptions are "converted" to onError-calls.
+            // A proper implementation must make sure that we do not break the contract.
+            observer.onError(t);
+        }
     }
 
     /**
-     * Creates a <em>new Observable</em> that will, when subscribed to, in turn subscribe to
-     * this Observable — using the Observer supplied by the given operator.
+     * Creates a <em>new Observable</em> that will, when subscribed to, in turn subscribe
+     * to this Observable — using the Observer supplied by the given operator.
      *
      * @param operator The Operator that will supply the delegating Observer.
      * @return A new Observable that is chained to this one.
@@ -42,6 +52,7 @@ public class Observable<T>
     {
         return new Observable<>(observer -> onSubscribe.accept(operator.apply(observer)));
     }
+
 
 
     //-----------------------------------------------------------------------------------------
@@ -59,15 +70,15 @@ public class Observable<T>
 
     public void subscribe(Consumer<T> onNext)
     {
-        subscribe(onNext, () -> {}, x -> {});
+        subscribe(onNext, () -> {}, throwable -> {});
     }
 
     public void subscribe(Consumer<T> onNext, Runnable onCompleted)
     {
-        subscribe(onNext, onCompleted, x -> {});
+        subscribe(onNext, onCompleted, throwable -> {});
     }
 
-        public void subscribe(Consumer<T> onNext, Runnable onCompleted, Consumer<Throwable> onError)
+    public void subscribe(Consumer<T> onNext, Runnable onCompleted, Consumer<Throwable> onError)
     {
         subscribe(new Observer<T>()
         {
