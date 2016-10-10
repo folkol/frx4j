@@ -51,8 +51,13 @@ public class Observable<T>
     }
 
     /**
+     * <p>
      * Creates a <em>new Observable</em> that will, when subscribed to, in turn subscribe
      * to this Observable — using the Observer supplied by the given operator.
+     * </p>
+     * <p>
+     * <b>N.b.</b> This method is called "lift" in RxJava.
+     * </p>
      *
      * @param operator The Operator that will supply the delegating Observer.
      * @return A new Observable that is chained to this one.
