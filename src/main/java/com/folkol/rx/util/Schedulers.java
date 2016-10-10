@@ -16,11 +16,12 @@ public class Schedulers
     private static final AtomicLong id = new AtomicLong();
 
     /**
-     * {@code newThread()} will create a new thread to schedule work on.
+     * {@code newThread()} creates a Worker that schedules work on a
+     * {@link Executors#newSingleThreadExecutor new SingleThreadExecutor}.
      */
     public static Scheduler newThread()
     {
-        return new Scheduler()
+        return () -> new Worker()
         {
             ExecutorService es = Executors.newSingleThreadExecutor(runnable -> {
                 Thread thread = new Thread(runnable);
@@ -39,7 +40,7 @@ public class Schedulers
 
     /**
      * <p>
-     * {@code immediate()} will call onSubscribe on the current thread.
+     * {@code immediate()} creates a Worker that calls onSubscribe on the current thread.
      * </p>
      * <p>
      * Note that this means "whatever thread THIS observable's schedule-call is made from",
@@ -48,6 +49,6 @@ public class Schedulers
      */
     public static Scheduler immediate()
     {
-        return Runnable::run;
+        return () -> Runnable::run;
     }
 }

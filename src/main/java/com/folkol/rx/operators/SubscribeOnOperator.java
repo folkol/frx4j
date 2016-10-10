@@ -3,16 +3,17 @@ package com.folkol.rx.operators;
 import com.folkol.rx.Observable;
 import com.folkol.rx.Observer;
 import com.folkol.rx.Scheduler;
+import com.folkol.rx.util.Worker;
 
 import java.util.function.Function;
 
 public class SubscribeOnOperator<T> implements Function<Observer<T>, Observer<Observable<T>>>
 {
-    private Scheduler scheduler;
+    private Worker scheduler;
 
     public SubscribeOnOperator(Scheduler scheduler)
     {
-        this.scheduler = scheduler;
+        this.scheduler = scheduler.createWorker();
     }
 
     @Override

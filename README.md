@@ -23,7 +23,7 @@
 
 # Secondary concepts
 
-- **Scheduler:** Even though asynchronicity and _Schedulers_ are ubiquitous in RxJava, I wouldn't call them core concepts. Schedulers are factories that can create Workers. (**N.b.** I haven't implemented Workers yet, my _Schedulers_ act like RX-Workers.)
+- **Scheduler:** Even though asynchronicity and _Schedulers_ are ubiquitous in RxJava, I wouldn't call them core concepts. Schedulers are factories that can create Workers.
 - **Worker:** A Worker is basically a with a job-queue to which one can submit tasks instead of calling them directly — for example the call to _onSubscribe_ for the SubscribeOnOperator.
 - **Upstream:** Closer to the originating Observable.
 - **Downstream:** Closer to the original subscriber.

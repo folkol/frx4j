@@ -2,8 +2,8 @@ package com.folkol.rx.operators;
 
 import com.folkol.rx.Observable;
 import com.folkol.rx.Observer;
-import com.folkol.rx.Scheduler;
 import com.folkol.rx.util.Schedulers;
+import com.folkol.rx.util.Worker;
 
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -20,7 +20,7 @@ public class MergingOperator<T> implements Function<Observer<T>, Observer<Observ
     private final AtomicInteger numObservables = new AtomicInteger();
     private final AtomicBoolean sourceCompleted = new AtomicBoolean();
     private final ConcurrentLinkedQueue<T> items = new ConcurrentLinkedQueue<>();
-    private final Scheduler drainingScheduler = Schedulers.newThread();
+    private final Worker drainingScheduler = Schedulers.newThread().createWorker();
 
     private Observer<T> observer;
 
