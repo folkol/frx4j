@@ -5,6 +5,7 @@ import com.folkol.rx.operators.MappingOperator;
 import com.folkol.rx.operators.MergingOperator;
 import com.folkol.rx.operators.ObserveOnOperator;
 import com.folkol.rx.operators.SubscribeOnOperator;
+import com.folkol.rx.util.Schedulers;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -169,7 +170,12 @@ public class Observable<T>
      */
     public static <T> Observable<T> merge(Observable<Observable<T>> source)
     {
-        return source.chain(new MergingOperator<>());
+        return merge(source, Schedulers.immediate());
+    }
+
+    public static <T> Observable<T> merge(Observable<Observable<T>> source, Scheduler scheduler)
+    {
+        return source.chain(new MergingOperator<>(scheduler));
     }
 
     /**

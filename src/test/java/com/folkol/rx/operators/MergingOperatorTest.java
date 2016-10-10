@@ -1,6 +1,7 @@
 package com.folkol.rx.operators;
 
 import com.folkol.rx.Observable;
+import com.folkol.rx.util.Schedulers;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -23,7 +24,7 @@ public class MergingOperatorTest
     {
         Observable<Observable<Integer>> source = bunchOfObserables();
 
-        Observable<Integer> merge = Observable.merge(source);
+        Observable<Integer> merge = Observable.merge(source, Schedulers.newThread());
 
         List<Integer> xs = collectItems(merge);
         assertEquals(NUM_ITEMS, xs.size());

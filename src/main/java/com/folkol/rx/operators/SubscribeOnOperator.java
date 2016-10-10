@@ -9,11 +9,11 @@ import java.util.function.Function;
 
 public class SubscribeOnOperator<T> implements Function<Observer<T>, Observer<Observable<T>>>
 {
-    private Worker scheduler;
+    private Worker worker;
 
     public SubscribeOnOperator(Scheduler scheduler)
     {
-        this.scheduler = scheduler.createWorker();
+        this.worker = scheduler.createWorker();
     }
 
     @Override
@@ -37,7 +37,7 @@ public class SubscribeOnOperator<T> implements Function<Observer<T>, Observer<Ob
             @Override
             public void onNext(final Observable<T> observable)
             {
-                scheduler.schedule(() -> {
+                worker.schedule(() ->
                     observable.subscribe(new Observer<T>()
                     {
 
@@ -58,8 +58,7 @@ public class SubscribeOnOperator<T> implements Function<Observer<T>, Observer<Ob
                         {
                             observer.onNext(t);
                         }
-                    });
-                });
+                    }));
             }
         };
     }

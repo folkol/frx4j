@@ -2,7 +2,7 @@ package com.folkol.rx.operators;
 
 import com.folkol.rx.Observable;
 import com.folkol.rx.Observer;
-import com.folkol.rx.util.Schedulers;
+import com.folkol.rx.Scheduler;
 import com.folkol.rx.util.Worker;
 
 import java.util.Iterator;
@@ -20,9 +20,16 @@ public class MergingOperator<T> implements Function<Observer<T>, Observer<Observ
     private final AtomicInteger numObservables = new AtomicInteger();
     private final AtomicBoolean sourceCompleted = new AtomicBoolean();
     private final ConcurrentLinkedQueue<T> items = new ConcurrentLinkedQueue<>();
-    private final Worker drainingScheduler = Schedulers.newThread().createWorker();
+    private final Worker drainingWorker;
+    private final Scheduler scheduler;
 
     private Observer<T> observer;
+
+    public MergingOperator(Scheduler scheduler)
+    {
+        this.scheduler = scheduler;
+        drainingWorker = scheduler.createWorker();
+    }
 
     @Override
     public Observer<Observable<T>> apply(Observer<T> observer)
@@ -35,7 +42,7 @@ public class MergingOperator<T> implements Function<Observer<T>, Observer<Observ
             {
                 numObservables.incrementAndGet();
                 observable
-                    .subscribeOn(Schedulers.newThread())
+                    .subscribeOn(scheduler)
                     .subscribe(MergingOperator.this::addAndScheduleDrain, numObservables::decrementAndGet);
             }
 
@@ -43,7 +50,7 @@ public class MergingOperator<T> implements Function<Observer<T>, Observer<Observ
             public void onCompleted()
             {
                 sourceCompleted.set(true);
-                drainingScheduler.schedule(MergingOperator.this::drain);
+                drainingWorker.schedule(MergingOperator.this::drain);
             }
 
             @Override
@@ -57,13 +64,14 @@ public class MergingOperator<T> implements Function<Observer<T>, Observer<Observ
     private void addAndScheduleDrain(T t)
     {
         items.add(t);
-        drainingScheduler.schedule(this::drain);
+        drainingWorker.schedule(this::drain);
     }
 
     private final Object drainMutex = new Object[0];
 
     private void drain()
     {
+        // Do we really need this, since the drainer is single threaded?
         synchronized (drainMutex) {
             Iterator<T> iterator = items.iterator();
             while (iterator.hasNext()) {
@@ -71,7 +79,7 @@ public class MergingOperator<T> implements Function<Observer<T>, Observer<Observ
                 iterator.remove();
             }
             if (sourceCompleted.get() && numObservables.get() == 0) {
-                drainingScheduler.schedule(observer::onCompleted);
+                drainingWorker.schedule(observer::onCompleted);
             }
         }
     }
