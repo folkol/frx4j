@@ -23,6 +23,6 @@ public class SubscribeOnOperatorTest
 
         Thread thread = future.get(10, TimeUnit.SECONDS);
         assertNotEquals("Expected the onNext callback from another Thread", Thread.currentThread(), thread);
-        assertTrue(future.get().getName().startsWith("schedulers-new-thread-"));
+        assertTrue(future.get().getName().startsWith("schedulers-thread-"));
     }
 }

@@ -5,7 +5,6 @@ import com.folkol.rx.operators.MappingOperator;
 import com.folkol.rx.operators.MergingOperator;
 import com.folkol.rx.operators.ObserveOnOperator;
 import com.folkol.rx.operators.SubscribeOnOperator;
-import com.folkol.rx.util.Schedulers;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -161,6 +160,22 @@ public class Observable<T>
     }
 
     /**
+     * Creates a new Observable that will merge the emits from all Observables emitted by upstream.
+     */
+    public static <T> Observable<T> merge(Observable<Observable<T>> source)
+    {
+        return source.chain(new MergingOperator<>());
+    }
+
+    /**
+     * Creates a new Observable Equivalent to merge(this.map(f)).
+     */
+    public <R> Observable<R> flatMap(Function<T, Observable<R>> f)
+    {
+        return merge(this.map(f));
+    }
+
+    /**
      * Creates a new Observable that will subscribe to its upstream Observable on the given scheduler, and then
      * pass-through all items.
      */
@@ -168,24 +183,6 @@ public class Observable<T>
     {
         Observable<Observable<T>> nested = Observable.just(this);
         return nested.chain(new SubscribeOnOperator<>(scheduler));
-    }
-
-    /**
-     * <p>
-     * Creates a new Observable that will merge the emits from all Observables emitted by upstream.
-     * </p>
-     * <p>
-     * This operator will
-     * </p>
-     */
-    public static <T> Observable<T> merge(Observable<Observable<T>> source)
-    {
-        return merge(source, Schedulers.immediate());
-    }
-
-    public static <T> Observable<T> merge(Observable<Observable<T>> source, Scheduler scheduler)
-    {
-        return source.chain(new MergingOperator<>(scheduler));
     }
 
     /**

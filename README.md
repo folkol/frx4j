@@ -23,7 +23,8 @@
 
 # Secondary concepts
 
-- **Scheduler:** Even though asynchronicity and _Schedulers_ are ubiquitous in RxJava, I wouldn't call them core concepts. It is just one example of an _Operator_ that, instead of calling _onSubscribe_ directly, delegates that call to some ExecutorService or similar.
+- **Scheduler:** Even though asynchronicity and _Schedulers_ are ubiquitous in RxJava, I wouldn't call them core concepts. Schedulers are factories that can create Workers. (**N.b.** I haven't implemented Workers yet, so the Schedulers accept the Runnables directly. This means that all Schedulers are single-threaded for now, so that we won't have to synchronize all tasks.)
+- **Worker:** A Worker is an abstraction above a Thread, to which one can submit tasks submit tasks to instead of calling them directly — for example the call to _onSubscribe_ for the SubscribeOnOperator. Note that there are no Workers in frx4j yet, so we submit all tasks to the Schedulers directly.
 - **Upstream:** Closer to the originating Observable.
 - **Downstream:** Closer to the original subscriber.
 

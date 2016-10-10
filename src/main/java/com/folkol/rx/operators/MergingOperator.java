@@ -21,14 +21,8 @@ public class MergingOperator<T> implements Function<Observer<T>, Observer<Observ
     private final AtomicBoolean sourceCompleted = new AtomicBoolean();
     private final ConcurrentLinkedQueue<T> items = new ConcurrentLinkedQueue<>();
     private final Scheduler drainingScheduler = Schedulers.newThread();
-    private final Scheduler subscribingScheduler;
 
     private Observer<T> observer;
-
-    public MergingOperator(Scheduler scheduler)
-    {
-        subscribingScheduler = scheduler;
-    }
 
     @Override
     public Observer<Observable<T>> apply(Observer<T> observer)
@@ -41,7 +35,7 @@ public class MergingOperator<T> implements Function<Observer<T>, Observer<Observ
             {
                 numObservables.incrementAndGet();
                 observable
-                    .subscribeOn(subscribingScheduler)
+                    .subscribeOn(Schedulers.newThread())
                     .subscribe(MergingOperator.this::addAndScheduleDrain, numObservables::decrementAndGet);
             }
 
